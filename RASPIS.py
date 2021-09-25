@@ -1,5 +1,6 @@
 from datetime import datetime, date, time
 import pickle
+
 def savelast(t=True):
     with open('data.pickle', 'wb') as f:
         pickle.dump(datetime.now() if t else datetime.combine(date(1, 1, 1), time(0, 0)), f)
@@ -14,8 +15,7 @@ def getlast():
 
 def TimeChecker():
     nowTime = datetime.now()
-    if nowTime.weekday() > 4:
-        return 'Сегодня выходной, просто предупредил.'
+    if nowTime.weekday() > 4: return None
     for k, i in enumerate(timePushPar):
         checkedTime = datetime.combine(date(datetime.now().year, datetime.now().month, datetime.now().day), i)
         if check(nowTime, checkedTime):
@@ -30,8 +30,7 @@ def TimeLogic(nowTime):
 #Функции для обработки запросов от пользователя
 def GetRaspis(command): # 0 - запрос на расписание дня, 1 - запрос на всю неделю
     nowTime = date(datetime.now().year, datetime.now().month, datetime.now().day)
-    if nowTime.weekday() > 4:
-        return 'Сегодня выходной, забей'
+    if nowTime.weekday() > 4: nowTime = nowTime.replace(day = nowTime.day + 7 - nowTime.weekday())
     if command == 0:
         return raspis[TimeLogic(nowTime)][nowTime.weekday()]
     elif command == 1:
@@ -55,7 +54,7 @@ raspis = ({
     1: ('(09.30) Физкультура и спорт', '(11.20) Философия пр.з  ауд.318', '', '', ''),
     2: ('(09.30) Высш.математика лек. ауд.522', '(11.20) Алгебра и геометрия лек.ауд.347', '(13.10) Введение в инф.тех.лек.ауд.517', '', ''),
     3: ('(09.30) Философия лек. ауд.514', '(11.20) Вычислительная техника лек.ауд.310', '', '', ''),
-    4: ('', '', '(13.10) Высш.математика пр.з. ауд.504а', '(15.00) Физкультура и спорт', '(17.15) Алгебра и геометрия пр.з. ауд.508')
+    4: ('', '', '(13.10) Высш.математика пр.з. ауд.504а', '(15.00) Физкультура и спорт', '(17.15) Алгебра и геометрия пр.з. ауд.508'),
 }
 )
 timePushPar = (time(6, 15), time(8, 5), time(9, 55), time(12, 10), time(14, 0)) # Час выставляется на 3 меньше нужного, в связи с разницей серверного и московского времени
