@@ -1,7 +1,7 @@
 import vk_api
 from RASPIS import TimeChecker, savelast, GetRaspis
 from flask import Flask, Response, request
-
+import random
 app = Flask(__name__)
 
 vk_session = vk_api.VkApi(token='2a85a114c3af837c332b88f804290e76ddf4f326025a20e352d897d41a3fd5c3c2e47bb56a1df0e226f83')
@@ -12,9 +12,9 @@ def GetUsersId():
     user_id_items = vk.groups.getMembers(group_id='207336652')
     return user_id_items['items']
 
-
 def sender(id, text):
-    vk.messages.send(user_id=id, message=text, random_id=0)
+    vk.messages.send(user_id=id, message=text, random_id= random.getrandbits(64))
+
 
 ##Функции для переконвертирования ответа с расписанием в формат сообщения
 def RaspisForDay(id):
