@@ -27,20 +27,20 @@ def RaspisForDay(id):
     sender(id, message)
 
 
-helpDict = {
-    0: 'Понедельник:\n',
-    1: 'Вторник:\n',
-    2: 'Среда:\n',
-    3: 'Четверг:\n',
-    4: 'Пятница:\n',
-}
+helpDict = (
+    'Понедельник:',
+    'Вторник:',
+    'Среда:',
+    'Четверг:',
+    'Пятница:'
+)
 
 
 def RaspisForWeek(id):
     raspis = GetRaspis(1)
     message = ''
     for i in raspis:
-        message += helpDict[i]
+        message += helpDict[i] + '\n'
         for k in raspis[i]:
             if k != '':
                 message += k + '\n'
