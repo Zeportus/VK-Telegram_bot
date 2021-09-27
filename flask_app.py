@@ -40,7 +40,7 @@ reversedHelpDict = {
 
 
 def RaspisForWeek(id):
-    sender(id, '\n'.join([helpDict[i] + '\n' + '\n'.join(filter(None, day))
+    sender(id, '\n\n'.join([helpDict[i] + '\n' + '\n'.join(filter(None, day))
                           for i, day in enumerate(GetRaspis(1))]))
 
 
