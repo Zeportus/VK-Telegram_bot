@@ -1,35 +1,40 @@
-from datetime import datetime, date, time
+from datetime import datetime, date, timezone, timedelta
 import pickle
+from functools import partial
+
+
+moscow = timezone(timedelta(hours=3))
+now = partial(datetime.now, moscow)
 
 def savelast(t=True):
     with open('data.pickle', 'wb') as f:
-        pickle.dump(datetime.now() if t else datetime.combine(date(1, 1, 1), time(0, 0)), f)
+        pickle.dump(now() if t else datetime(1, 1, 1, tzinfo=moscow), f)
 
 def getlast():
     try:
         with open('data.pickle', 'rb') as f:
             return pickle.load(f)
 
-    except: return datetime.combine(date(1, 1, 1), time(0, 0))
+    except: return datetime(1, 1, 1, tzinfo=moscow)
 
 
 def TimeChecker():
-    nowTime = datetime.now()
+    nowTime = now()
     if nowTime.weekday() > 4: return None
-    for k, i in enumerate(timePushPar):
-        checkedTime = datetime.combine(date(datetime.now().year, datetime.now().month, datetime.now().day), i)
+    for i, timePair in enumerate(timePushPar):
+        checkedTime = datetime(nowTime.year, nowTime.month, nowTime.day, timePair[0], timePair[1], tzinfo=moscow)
         if check(nowTime, checkedTime):
-            return raspis[TimeLogic(nowTime.date())][nowTime.weekday()][k]
+            return raspis[TimeLogic(nowTime.date())][nowTime.weekday()][i]
 
-
+# Четность недели
 def TimeLogic(nowTime):
-    return ((nowTime - date(datetime.now().year, 9, 6)).days // 7) % 2
+    return ((nowTime - date(nowTime.year, 9, 6)).days // 7) % 2
 
 
 
 #Функции для обработки запросов от пользователя
 def GetRaspis(command): # 0 - запрос на расписание дня, 1 - запрос на всю неделю
-    nowTime = date(datetime.now().year, datetime.now().month, datetime.now().day)
+    nowTime = now().date()
     if nowTime.weekday() > 4: nowTime = nowTime.replace(day = nowTime.day + 7 - nowTime.weekday())
     if command == 0:
         return raspis[TimeLogic(nowTime)][nowTime.weekday()]
@@ -57,7 +62,8 @@ raspis = ({
     4: ('', '', '(13.10) Высш.математика пр.з. ауд.504а', '(15.00) Физкультура и спорт', '(17.15) Алгебра и геометрия пр.з. ауд.508'),
 }
 )
-timePushPar = (time(6, 15), time(8, 5), time(9, 55), time(12, 10), time(14, 0)) # Час выставляется на 3 меньше нужного, в связи с разницей серверного и московского времени
+# GMT+3 MOSCOW TIMEZONE
+timePushPar = ((9, 15), (11, 5), (12, 55), (15, 10), (17, 0))
 
 def check(nowtime,checkedtime,dopusk = 2, dopuskLast = 60):
     lastDataTime = getlast()
