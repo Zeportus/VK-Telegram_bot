@@ -34,6 +34,13 @@ helpDict = (
     'Четверг:',
     'Пятница:'
 )
+reversedHelpDict = {
+    'пн': 0,
+    'вт': 1,
+    'ср': 2,
+    'чт': 3,
+    'пт': 4,
+}
 
 
 def RaspisForWeek(id):
@@ -84,23 +91,16 @@ def GetEvent():
     if data['type'] == 'message_new':
         msg = data['object']['message']['text'].lower()
         id = data['object']['message']['peer_id']
-        inList = False
-        if id in GetUsersId(): inList = True
-        if msg == "р" and inList:
-            RaspisForDay(id)
-        elif msg == "в" and inList:
-            RaspisForWeek(id)
-        elif msg == 'пн' and inList:
-            RaspisForWeekDay(id, 0)
-        elif msg == 'вт' and inList:
-            RaspisForWeekDay(id, 1)
-        elif msg == 'ср' and inList:
-            RaspisForWeekDay(id, 2)
-        elif msg == 'чт' and inList:
-            RaspisForWeekDay(id, 3)
-        elif msg == 'пт' and inList:
-            RaspisForWeekDay(id, 4)
-        elif not inList:
+        if id in GetUsersId():
+            if msg == "р":
+                RaspisForDay(id)
+            elif msg == "в":
+                RaspisForWeek(id)
+            elif msg in reversedHelpDict:
+                RaspisForWeekDay(id, reversedHelpDict[msg])
+            else:
+                sender(id, 'Неверная команда.')
+        else:
             sender(id, 'Ты не подписан! Я с такими не общаюсь.')
 
     return Response('ok'), 200
