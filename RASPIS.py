@@ -74,7 +74,7 @@ raspis = ((
 timePushPar = ((9, 15), (11, 5), (12, 55), (15, 10), (17, 0))
 
 
-def check(nowtime, checkedtime, dopusk=2, dopuskLast=60):
+def check(nowtime, checkedtime, dopusk=1, dopuskLast=60):
     lastDataTime = getlast()
 
     deltaNowPush = max(nowtime, checkedtime) - min(nowtime, checkedtime)
