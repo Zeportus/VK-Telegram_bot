@@ -20,11 +20,7 @@ def sender(id, text):
 
 ##Функции для переконвертирования ответа с расписанием в формат сообщения
 def RaspisForDay(id):
-    raspis = GetRaspis(0)
-    message = ''
-    for i in raspis:
-        message += i + '\n'
-    sender(id, message)
+    sender(id, '\n'.join(filter(None, GetRaspis(0))))
 
 
 helpDict = (
@@ -44,23 +40,12 @@ reversedHelpDict = {
 
 
 def RaspisForWeek(id):
-    raspis = GetRaspis(1)
-    message = ''
-    for i in raspis:
-        message += helpDict[i] + '\n'
-        for k in raspis[i]:
-            if k != '':
-                message += k + '\n'
-        message += '\n'
-    sender(id, message)
+    sender(id, '\n'.join([helpDict[i] + '\n' + '\n'.join(filter(None, day))
+                          for i, day in enumerate(GetRaspis(1))]))
 
 
 def RaspisForWeekDay(id, weekDay):
-    raspis = GetRaspis(1)
-    message = ''
-    for i in raspis[weekDay]:
-        message += i + '\n'
-    sender(id, message)
+    sender(id, '\n'.join(filter(None, GetRaspis(1)[weekDay])))
 
 
 @app.route('/')
