@@ -71,7 +71,7 @@ def TimeLogic(nowTime):
 # Функции для обработки запросов от пользователя
 def GetRaspis(command):  # 0 - запрос на расписание дня, 1 - запрос на всю неделю
     nowTime = now().date()
-    if nowTime.weekday() > 4: nowTime = nowTime.replace(day=nowTime.day + 7 - nowTime.weekday())
+    if nowTime.weekday() > 4: nowTime += timedelta(days = 7 - nowTime.weekday())
     if command == 0:
         return raspis[TimeLogic(nowTime)][nowTime.weekday()]
     elif command == 1:
