@@ -4,7 +4,7 @@ from flask import Flask, Response, request
 import random
 
 #TESTING включает режим тестироващика. При нем все ID, отличные от testerID будут получать оповещение о проведении технических работ.
-TESTING = True
+TESTING = False
 testerID = 366782296
 app = Flask(__name__)
 

@@ -1,6 +1,5 @@
 from datetime import datetime, date, timezone, timedelta
 import pickle
-import re
 from functools import partial
 
 moscow = timezone(timedelta(hours=3))
@@ -9,24 +8,24 @@ now = partial(datetime.now, moscow)
 
 #Ссылки в зум на предметы по хештегам
 lessons_zoom = {           # Да костыли пиздец, но я загорелся идеей. Это короче шаблон так сказать. Чтобы при первом запуске работало.
-    '#иняз' : 'ссылка',
-    '#философия' : 'ссылка',
-    '#аиг' : 'ссылка',
-    '#вышмат' : 'ссылка',
-    '#инфэк': 'ссылка',
-    '#компграф' : 'ссылка',
-    '#физра' : 'ссылка',
-    '#вычтех' : 'ссылка',
-    '#инфтех' : 'ссылка'
+    '#иняз' : None,
+    '#философия' : None,
+    '#аиг' : None,
+    '#вышмат' : None,
+    '#инфэк': None,
+    '#компграф' : None,
+    '#физра' : None,
+    '#вычтех' : None,
+    '#инфтех' : None
 }
 
 def important_checker(message):
-    url = re.findall(r'http(?:s)?://\S+', message)
+    message_to_send = message
     message = message.lower()
     for i in lessons_zoom:
         if i in message and 'zoom' in message:
             lessons_zoom_edit = loadZoom() # А вот edit это уже то, с чем мы работаем.
-            lessons_zoom_edit[i] = url[0]
+            lessons_zoom_edit[i] = message_to_send
             saveZoom(lessons_zoom_edit)
 
 
@@ -97,12 +96,13 @@ def TimeChecker():
     for i, timePair in enumerate(timePushPar):
         checkedTime = datetime(nowTime.year, nowTime.month, nowTime.day, timePair[0], timePair[1], tzinfo=moscow)
         if check(nowTime, checkedTime):
+
             href_zoom = ''
             lessons_zoom_edit = loadZoom()
             for k in lessons_zoom_edit:
                 if k in raspis[TimeLogic(nowTime.date())][nowTime.weekday()][i]:
                     href_zoom = lessons_zoom_edit[k]
-            return raspis[TimeLogic(nowTime.date())][nowTime.weekday()][i] + '\n' + href_zoom
+            return raspis[TimeLogic(nowTime.date())][nowTime.weekday()][i] + '\n\n' + href_zoom
 
 # Четность недели
 def TimeLogic(nowTime):
@@ -120,7 +120,7 @@ def GetRaspis(command):  # 0 - запрос на расписание дня, 1 
 
 
 # GMT+3 MOSCOW TIMEZONE
-timePushPar = ((1, 44), (11, 5), (12, 55), (15, 10), (17, 0))
+timePushPar = ((9, 25), (11, 15), (13, 5), (15, 20), (17, 10))
 
 
 def check(nowtime, checkedtime, dopusk=1, dopuskLast=60):
