@@ -7,16 +7,17 @@ now = partial(datetime.now, moscow)
 
 
 #Ссылки в зум на предметы по хештегам
+standart = 'Скорее всего занятие в ЭИОС. Но может и ссылку еще не скинули.'
 lessons_zoom = {           # Да костыли пиздец, но я загорелся идеей. Это короче шаблон так сказать. Чтобы при первом запуске работало.
-    '#иняз' : None,
-    '#философия' : None,
-    '#аиг' : None,
-    '#вышмат' : None,
-    '#инфэк': None,
-    '#компграф' : None,
-    '#физра' : None,
-    '#вычтех' : None,
-    '#инфтех' : None
+    '#иняз' : standart,
+    '#философия' : standart,
+    '#аиг' : standart,
+    '#вышмат' : standart,
+    '#инфэк': standart,
+    '#компграф' : standart,
+    '#физра' : standart,
+    '#вычтех' : standart,
+    '#инфтех' : standart
 }
 
 def important_checker(message):
@@ -24,6 +25,9 @@ def important_checker(message):
     message = message.lower()
     for i in lessons_zoom:
         if i in message and 'zoom' in message:
+            message_to_send = message_to_send.replace(i, '', 1) # Удаляем хештег в сообщении. Для этого вообще подойдет регулярное выражение, но я почитал это чет сложно
+            if i == '#аиг': message_to_send = message_to_send.replace('#АиГ', '', 1)
+
             lessons_zoom_edit = loadZoom() # А вот edit это уже то, с чем мы работаем.
             lessons_zoom_edit[i] = message_to_send
             saveZoom(lessons_zoom_edit)
@@ -32,7 +36,6 @@ def important_checker(message):
 def saveZoom(lessons_zoom):
     with open('zoomLessons.pickle', 'wb') as f:
         pickle.dump(lessons_zoom, f)
-
 
 def loadZoom():
     try:
@@ -92,6 +95,7 @@ def getlast():
 
 def TimeChecker():
     nowTime = now()
+
     if nowTime.weekday() > 4: return None
     for i, timePair in enumerate(timePushPar):
         checkedTime = datetime(nowTime.year, nowTime.month, nowTime.day, timePair[0], timePair[1], tzinfo=moscow)

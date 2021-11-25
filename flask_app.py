@@ -1,5 +1,5 @@
 import vk_api
-from RASPIS import TimeChecker, savelast, GetRaspis, important_checker
+from RASPIS import TimeChecker, savelast, GetRaspis, important_checker, saveZoom, loadZoom
 from flask import Flask, Response, request
 import random
 
@@ -8,7 +8,8 @@ TESTING = False
 testerID = 366782296
 app = Flask(__name__)
 
-vk_session = vk_api.VkApi(token='2a85a114c3af837c332b88f804290e76ddf4f326025a20e352d897d41a3fd5c3c2e47bb56a1df0e226f83')
+with open('Token') as f: token = f.read()
+vk_session = vk_api.VkApi(token=token)
 vk = vk_session.get_api()
 
 
@@ -57,6 +58,11 @@ def RaspisForWeekDay(id, weekDay):
 def Main():
     PushMessage = TimeChecker()
     if PushMessage:
+        lessons_zoom_edit = loadZoom() # После того, как пара прошла, удаляем информацию о ссылке из соответствующего раздела.
+        for i in lessons_zoom_edit:
+            if i in PushMessage and i != '#аиг': lessons_zoom_edit[i] = 'Скорее всего занятие в ЭИОС. Но может и ссылку еще не скинули.'
+        saveZoom(lessons_zoom_edit)
+
         savelast()
         for i in GetUsersId():
             if (not TESTING) or (TESTING and i == testerID):
