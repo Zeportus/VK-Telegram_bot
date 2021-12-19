@@ -4,7 +4,7 @@ from flask import Flask, Response, request
 from TeleScout import MessageFilter
 import random
 import telebot
-
+print('s')
 with open('Token') as f:
     teleToken = f.readline().replace('\n', '', 1)
     token = f.readline()

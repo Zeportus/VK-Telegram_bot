@@ -4,10 +4,11 @@ from functools import partial
 import math
 import psycopg2
 
-
+with open('bd_pass') as f:
+    password = f.readline()
 conn = psycopg2.connect(database="d9tvhlu5hrq5n3",
                                      user="ivyzzlxvzrvlnd",
-                                     password='80959151e7a51744623bcd31f1a2b0389f1f3a987f7044ee95dffa7b3c395ff2',
+                                     password= password,
                                      host="ec2-54-74-35-87.eu-west-1.compute.amazonaws.com",
                                      port="5432")
 
