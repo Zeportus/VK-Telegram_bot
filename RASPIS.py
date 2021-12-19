@@ -76,22 +76,23 @@ TimeLessonDict = {
 }
 
 raspis =((([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6)), (([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6)))
-chet = True
-for weekIndex, i in enumerate(raspis): # четная и нечетная
-    if weekIndex == 0: chet = True
-    else: chet = False
-    for dayIndex, j in enumerate(i): # день недели
-        weekDay = WeekDayDict[dayIndex]
-        for subIndex, k in enumerate(j): # предметы
-                time = TimeLessonDict[subIndex]
-                subject = ''
-                try:
-                    cursor.execute(f"SELECT subject, room_numb, start_time FROM timetable WHERE parity = {str(chet)} AND day = '{weekDay}' AND start_time = '{time}';")
-                    push_item = list(cursor.fetchall())
-                    if push_item: push_item = list(push_item[0]) # Проверка на наличие в базе
-                    subject = ' '.join(push_item)
-                    raspis[weekIndex][dayIndex][subIndex] = subject
-                except: conn.rollback()
+def refresh():
+    chet = True
+    for weekIndex, i in enumerate(raspis): # четная и нечетная
+        if weekIndex == 0: chet = True
+        else: chet = False
+        for dayIndex, j in enumerate(i): # день недели
+            weekDay = WeekDayDict[dayIndex]
+            for subIndex, k in enumerate(j): # предметы
+                    time = TimeLessonDict[subIndex]
+                    subject = ''
+                    try:
+                        cursor.execute(f"SELECT subject, room_numb, start_time FROM timetable WHERE parity = {str(chet)} AND day = '{weekDay}' AND start_time = '{time}';")
+                        push_item = list(cursor.fetchall())
+                        if push_item: push_item = list(push_item[0]) # Проверка на наличие в базе
+                        subject = ' '.join(push_item)
+                        raspis[weekIndex][dayIndex][subIndex] = subject
+                    except: conn.rollback()
 
 
 

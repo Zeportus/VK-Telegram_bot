@@ -1,6 +1,6 @@
 import psycopg2
 import sys
-
+import requests
 from PyQt5.QtWidgets import (QApplication, QWidget,
                              QTabWidget, QAbstractScrollArea,
                              QVBoxLayout, QHBoxLayout,
@@ -233,6 +233,7 @@ class MainWindow(QWidget):
         elif weekDay == 'Суббота':
             self._change_day_from_table(self.sat1_table)
             self._change_day_from_table(self.sat2_table)
+        requests.get('https://Zeportuss.pythonanywhere.com/refresh')
 
 
     def _change_day_from_table(self, table):

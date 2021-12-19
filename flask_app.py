@@ -1,5 +1,5 @@
 import vk_api
-from RASPIS import TimeChecker, savelast, GetRaspis, important_checker, saveZoom, loadZoom, TimeLogic, WeekCountLogic
+from RASPIS import TimeChecker, savelast, GetRaspis, important_checker, saveZoom, loadZoom, TimeLogic, WeekCountLogic, refresh
 from flask import Flask, Response, request
 from TeleScout import MessageFilter
 import random
@@ -161,3 +161,8 @@ def GetUpdates():
         if teleData[1] == 2: teleData[0] = CommandFilter(0, teleData[0], True) # Присылается в teleData[0] р, в или день недели. После чего заменяется на расписание
         bot.send_message(userId, teleData[0])
     return ''
+
+@app.route('/refresh')
+def refreshBase():
+    refresh()
+    return 'ok'
