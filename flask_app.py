@@ -1,5 +1,5 @@
 import vk_api
-from RASPIS import TimeChecker, savelast, GetRaspis, important_checker, saveZoom, loadZoom
+from RASPIS import TimeChecker, savelast, GetRaspis, important_checker, saveZoom, loadZoom, TimeLogic, WeekCountLogic
 from flask import Flask, Response, request
 from TeleScout import MessageFilter
 import random
@@ -10,7 +10,7 @@ with open('Token') as f:
     token = f.readline()
 
 bot = telebot.TeleBot(teleToken)
-bot.set_webhook('https://Zeportuss.pythonanywhere.com/teleRequest')
+bot.set_webhook('https://Zeportuss.pythonanywhere.com/IrkutskCanYou')
 
 vk_session = vk_api.VkApi(token=token)
 vk = vk_session.get_api()
@@ -18,7 +18,7 @@ vk = vk_session.get_api()
 app = Flask(__name__)
 
 
-#TESTING включает режим тестироващика. При нем все ID, отличные от testerID будут получать оповещение о проведении технических работ.
+#TESTING включает режим тестироващика. При нем все ID, отличные от testerID будут получать оповещение о проведении технических работ. И не будут получать уведомления
 TESTING = False
 testerID = 366782296
 
@@ -46,7 +46,8 @@ helpDict = (
     'Вторник:',
     'Среда:',
     'Четверг:',
-    'Пятница:'
+    'Пятница:',
+    'Суббота:'
 )
 reversedHelpDict = {
     'пн': 0,
@@ -54,16 +55,27 @@ reversedHelpDict = {
     'ср': 2,
     'чт': 3,
     'пт': 4,
+    'сб' : 5
 }
 
 
 def RaspisForWeek(id, isTele):
-    return sender(id, '\n'.join([helpDict[i] + '\n' + '\n'.join(filter(None, day))
+    return sender(id, '\n'.join([helpDict[i] + '\n' + '\n'.join(filter(None, day)) + '\n'
                           for i, day in enumerate(GetRaspis(1))]), isTele)
 
 
 def RaspisForWeekDay(id, weekDay, isTele):
     return sender(id, '\n'.join(filter(None, GetRaspis(1)[weekDay])), isTele)
+
+
+def WeekChet(id, isTele):
+    msg = 'Ошибка'
+    if TimeLogic(None) == 0: msg = 'Нижняя'
+    else: msg = 'Верхняя'
+    return sender(id, msg, isTele)
+
+def WeekCount(id, isTele):
+    return sender(id, WeekCountLogic(), isTele)
 
 
 @app.route('/')
@@ -95,8 +107,12 @@ def CommandFilter(id, msg, isTele):
         return RaspisForDay(id, isTele)
     elif msg == "в":
         return RaspisForWeek(id, isTele)
+    elif msg == 'ч':
+        return WeekChet(id, isTele)
+    elif msg == 'н':
+        return WeekCount(id, isTele)
     elif msg == 'с':
-        return sender(id, 'Добро пожаловать!✌🏻\nЭтот бот будет напоминать тебе о паре за 15 минут.\nСоветуем не отключай уведомления.\nСписок команд:\n“р” - расписание на текущий день\n“в” - расписание на всю неделю,\n“пн” - “пт” - расписание на определенный день', isTele)
+        return sender(id, 'Добро пожаловать!✌🏻\nЭтот бот будет напоминать тебе о паре за 15 минут.\nСоветуем не отключай уведомления.\nСписок команд:\n“р” - расписание на текущий день\n“в” - расписание на всю неделю,\n“пн” - “пт” - расписание на определенный день\n"ч" - четность недели\n"н" - неделя по счету.', isTele)
     elif msg in reversedHelpDict:
         return RaspisForWeekDay(id, reversedHelpDict[msg], isTele)
     elif not isTele: # Тут стоит это условие, чтобы бот в телеге не отсылал это сообщение.
@@ -128,9 +144,10 @@ def GetEvent():
     return Response('ok'), 200
 
 
-@app.route('/teleRequest', methods = ['POST']) # Тут начинается коваться телеграм скаут
+@app.route('/IrkutskCanYou', methods = ['POST']) # Для телеграмма
 def GetUpdates():
     data = request.get_json()
+    print(loadZoom()['#инфэк'])
 
     if 'message' in data and 'title' in data['message']['chat'] and 'text' in data['message']:  # Так проверяем является наше событие сообщением из группы телеграмм.
         if data['message']['chat']['title'] == 'Поток БВТ21':
@@ -141,7 +158,6 @@ def GetUpdates():
     if 'message' in data and data['message']['chat']['type'] == 'private':
         msg = data['message']['text']
         userId = data['message']['from']['id']
-
         teleData = MessageFilter(msg)
         if teleData[1] == 2: teleData[0] = CommandFilter(0, teleData[0], True) # Присылается в teleData[0] р, в или день недели. После чего заменяется на расписание
         bot.send_message(userId, teleData[0])

@@ -1,6 +1,18 @@
 from datetime import datetime, date, timezone, timedelta
 import pickle
 from functools import partial
+import math
+import psycopg2
+
+
+conn = psycopg2.connect(database="d9tvhlu5hrq5n3",
+                                     user="ivyzzlxvzrvlnd",
+                                     password='80959151e7a51744623bcd31f1a2b0389f1f3a987f7044ee95dffa7b3c395ff2',
+                                     host="ec2-54-74-35-87.eu-west-1.compute.amazonaws.com",
+                                     port="5432")
+
+cursor = conn.cursor()
+
 
 moscow = timezone(timedelta(hours=3))
 now = partial(datetime.now, moscow)
@@ -44,39 +56,41 @@ def loadZoom():
 
     except: return lessons_zoom
 
-#Читаем файл с расписанием
-raspis =((([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6)), (([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6)))
-ChetDict = {
-    'Четная:' : 0,
-    'Нечетная:' : 1,
-}
+#А теперь уже читаем из базы. txt отстой
 WeekDayDict = {
-    'Понедельник:': 0,
-    'Вторник:': 1,
-    'Среда:': 2,
-    'Четверг:': 3,
-    'Пятница:': 4
-}
+            0: 'Понедельник',
+            1: 'Вторник',
+            2: 'Среда',
+            3: 'Четверг',
+            4: 'Пятница',
+            5 : 'Суббота'
+        }
 TimeLessonDict = {
-    '(09.30)' : 0,
-    '(11.20)' : 1,
-    '(13.10)' : 2,
-    '(15.25)' : 3,
-    '(17.15)' : 4,
-    '(19.00)' : 5
+    0 : '09:30',
+    1 : '11:20',
+    2 : '13:10',
+    3 : '15:25',
+    4 : '17:15',
+    5 : '19:00'
 }
-with open('RaspisInfo.txt', 'r') as f:
-    Week = 0
-    WeekDay = 0
 
-    for i in f:
-        i = i.replace('\n', '')
-        if i in ChetDict: Week = ChetDict[i]
-        elif i in WeekDayDict: WeekDay = WeekDayDict[i]
-        else:
-            for k in TimeLessonDict.keys():
-                if k in i:
-                    raspis[Week][WeekDay][TimeLessonDict[k]] = i
+raspis =((([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6)), (([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6)))
+chet = True
+for weekIndex, i in enumerate(raspis): # четная и нечетная
+    if weekIndex == 0: chet = True
+    else: chet = False
+    for dayIndex, j in enumerate(i): # день недели
+        weekDay = WeekDayDict[dayIndex]
+        for subIndex, k in enumerate(j): # предметы
+                time = TimeLessonDict[subIndex]
+                subject = ''
+                try:
+                    cursor.execute(f"SELECT subject, room_numb, start_time FROM timetable WHERE parity = {str(chet)} AND day = '{weekDay}' AND start_time = '{time}';")
+                    push_item = list(cursor.fetchall())
+                    if push_item: push_item = list(push_item[0]) # Проверка на наличие в базе
+                    subject = ' '.join(push_item)
+                    raspis[weekIndex][dayIndex][subIndex] = subject
+                except: conn.rollback()
 
 
 
@@ -110,8 +124,14 @@ def TimeChecker():
             return raspis[TimeLogic(nowTime.date())][nowTime.weekday()][i] + '\n\n' + href_zoom
 
 # Четность недели
+#В эту функцию мы передаем из Timechecker текущее время. Чтобы использовать ее во flask_app добавлена вот эта строчка.
 def TimeLogic(nowTime):
+    if not nowTime: nowTime = now().date()
     return ((nowTime - date(nowTime.year, 9, 6)).days // 7) % 2
+
+def WeekCountLogic():
+    print (now().date() - date(now().date().year, 9, 5)) #Высталвено 5, ибо с шестого числа недели считаются некорректно
+    return str(math.ceil(((now().date() - date(now().date().year, 9, 5)).days / 7)) + 1)
 
 
 # Функции для обработки запросов от пользователя
@@ -125,10 +145,10 @@ def GetRaspis(command):  # 0 - запрос на расписание дня, 1 
 
 
 # GMT+3 MOSCOW TIMEZONE
-timePushPar = ((9, 25), (11, 15), (13, 5), (15, 20), (17, 10), (18, 55))
+timePushPar = ((9, 25 +1), (11, 15 +1), (13, 5 +1), (15, 20 +1), (17, 10 +1), (18, 55 +1))
 
 
-def check(nowtime, checkedtime, dopusk=1, dopuskLast=60):
+def check(nowtime, checkedtime, dopusk=0, dopuskLast=60):
     lastDataTime = getlast()
 
     deltaNowPush = max(nowtime, checkedtime) - min(nowtime, checkedtime)
