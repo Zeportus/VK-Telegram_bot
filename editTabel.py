@@ -1,6 +1,6 @@
 import psycopg2
 import sys
-print(s)
+
 from PyQt5.QtWidgets import (QApplication, QWidget,
                              QTabWidget, QAbstractScrollArea,
                              QVBoxLayout, QHBoxLayout,

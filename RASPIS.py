@@ -3,7 +3,7 @@ import pickle
 from functools import partial
 import math
 import psycopg2
-
+print('')
 with open('bd_pass') as f:
     password = f.readline()
 conn = psycopg2.connect(database="d9tvhlu5hrq5n3",
