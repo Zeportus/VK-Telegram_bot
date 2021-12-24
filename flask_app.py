@@ -58,10 +58,9 @@ reversedHelpDict = {
 }
 
 
-def RaspisForWeek(id, isTele):
+def RaspisForWeek(id, isTele, command):
     return sender(id, '\n'.join([helpDict[i] + '\n' + '\n'.join(filter(None, day)) + '\n'
-                          for i, day in enumerate(GetRaspis(1))]), isTele)
-
+                          for i, day in enumerate(GetRaspis(command))]), isTele)
 
 def RaspisForWeekDay(id, weekDay, isTele):
     return sender(id, '\n'.join(filter(None, GetRaspis(1)[weekDay])), isTele)
@@ -79,7 +78,9 @@ def WeekCount(id, isTele):
 
 @app.route('/')
 def Main():
+    print('I WAS HERE'*20)
     PushMessage = TimeChecker()
+    print(PushMessage)
     if PushMessage:
         lessons_zoom_edit = loadZoom() # После того, как пара прошла, удаляем информацию о ссылке из соответствующего раздела.
         for i in lessons_zoom_edit:
@@ -105,13 +106,15 @@ def CommandFilter(id, msg, isTele):
     if msg == "р":
         return RaspisForDay(id, isTele)
     elif msg == "в":
-        return RaspisForWeek(id, isTele)
+        return RaspisForWeek(id, isTele, 1)
+    elif msg == 'св':
+        return RaspisForWeek(id, isTele, 2)
     elif msg == 'ч':
         return WeekChet(id, isTele)
     elif msg == 'н':
         return WeekCount(id, isTele)
     elif msg == 'с':
-        return sender(id, 'Добро пожаловать!✌🏻\nЭтот бот будет напоминать тебе о паре за 15 минут.\nСоветуем не отключай уведомления.\nСписок команд:\n“р” - расписание на текущий день\n“в” - расписание на всю неделю,\n“пн” - “пт” - расписание на определенный день\n"ч" - четность недели\n"н" - неделя по счету.', isTele)
+        return sender(id, 'Добро пожаловать!✌🏻\nЭтот бот будет напоминать тебе о паре за 15 минут.\nСоветуем не отключай уведомления.\nСписок команд:\n“р” - расписание на текущий день\n“в” - расписание на всю неделю,\n“пн” - “пт” - расписание на определенный день\n"ч" - четность недели\n"н" - неделя по счету.\n"св" - следующая неделя.', isTele)
     elif msg in reversedHelpDict:
         return RaspisForWeekDay(id, reversedHelpDict[msg], isTele)
     elif not isTele: # Тут стоит это условие, чтобы бот в телеге не отсылал это сообщение.
@@ -166,3 +169,5 @@ def GetUpdates():
 def refreshBase():
     refresh()
     return 'ok'
+
+print(loadZoom())

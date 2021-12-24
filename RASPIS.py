@@ -3,12 +3,10 @@ import pickle
 from functools import partial
 import math
 import psycopg2
-print('')
-with open('bd_pass') as f:
-    password = f.readline()
+
 conn = psycopg2.connect(database="d9tvhlu5hrq5n3",
                                      user="ivyzzlxvzrvlnd",
-                                     password= password,
+                                     password= 'varvara1',
                                      host="ec2-54-74-35-87.eu-west-1.compute.amazonaws.com",
                                      port="5432")
 
@@ -76,7 +74,9 @@ TimeLessonDict = {
 }
 
 raspis =((([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6)), (([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6), ([''] * 6)))
+print(raspis)
 def refresh():
+    global raspis
     chet = True
     for weekIndex, i in enumerate(raspis): # четная и нечетная
         if weekIndex == 0: chet = True
@@ -89,10 +89,15 @@ def refresh():
                     try:
                         cursor.execute(f"SELECT subject, room_numb, start_time FROM timetable WHERE parity = {str(chet)} AND day = '{weekDay}' AND start_time = '{time}';")
                         push_item = list(cursor.fetchall())
-                        if push_item: push_item = list(push_item[0]) # Проверка на наличие в базе
-                        subject = ' '.join(push_item)
-                        raspis[weekIndex][dayIndex][subIndex] = subject
-                    except: conn.rollback()
+                        push_item = list(push_item[0])
+                        if push_item:
+                            subject = ' '.join(push_item)
+                            raspis[weekIndex][dayIndex][subIndex] = subject
+                        else: raspis[weekIndex][dayIndex][subIndex] = ''
+                    except:
+                        raspis[weekIndex][dayIndex][subIndex] = ''
+                        conn.rollback()
+refresh()
 
 
 
@@ -144,6 +149,9 @@ def GetRaspis(command):  # 0 - запрос на расписание дня, 1 
         return raspis[TimeLogic(nowTime)][nowTime.weekday()]
     elif command == 1:
         return raspis[TimeLogic(nowTime)]
+    elif command == 2:
+        if TimeLogic(nowTime) == 0: return raspis[1]
+        else: return raspis[0]
 
 
 # GMT+3 MOSCOW TIMEZONE
